@@ -3,9 +3,9 @@ const axios = require("axios");
 
 const router = express.Router();
 
-// Hardcoded Gemini API key (NOT RECOMMENDED)
-const GEMINI_API_KEY = "ayWiCpoq4VLZyQkO85KLpaQJiGaIsX2D"; // Replace with your actual Gemini API key
-const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+// Hardcoded Mistral API key (NOT RECOMMENDED)
+const MISTRAL_API_KEY = "ayWiCpoq4VLZyQkO85KLpaQJiGaIsX2D"; // Replace with your actual Mistral API key
+const MISTRAL_API_URL = "https://api.mistral.ai/v1/chat/completions";
 
 router.post("/generate-resume", async (req, res) => {
   const { userPrompt } = req.body;
@@ -14,14 +14,26 @@ router.post("/generate-resume", async (req, res) => {
   }
 
   try {
-    const response = await axios.post(GEMINI_API_URL, {
-      contents: [{ parts: [{ text: userPrompt }] }],
-    });
+    const response = await axios.post(
+      MISTRAL_API_URL,
+      {
+        model: "mistral-small",
+        messages: [{ role: "user", content: userPrompt }],
+        max_tokens: 1500,
+        temperature: 0.7,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${MISTRAL_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
-    if (response.data.candidates && response.data.candidates.length > 0) {
-      res.json({ resume: response.data.candidates[0].content.parts[0].text });
+    if (response.data.choices && response.data.choices.length > 0) {
+      res.json({ resume: response.data.choices[0].message.content });
     } else {
-      console.error("No candidates in Gemini API response:", response.data);
+      console.error("No choices in Mistral API response:", response.data);
       res.status(500).json({ error: "No resume data received from API" });
     }
   } catch (error) {
