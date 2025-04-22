@@ -4,16 +4,21 @@ from routes import router
 
 app = FastAPI()
 
-# Configure CORS
+# Hard-coded CORS origins
+ALLOWED_ORIGINS = [
+    "https://ai-resume-client.onrender.com",
+    "http://localhost:3000",
+    "http://localhost:3001"
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000","https://ai-resume-client.onrender.com"],  # React frontend URL
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Include API routes
 app.include_router(router, prefix="/api")
 
 @app.get("/")
